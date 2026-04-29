@@ -215,7 +215,10 @@ class Blockchain:
         if not os.path.exists(CHAIN_FILE):
             return
         with open(CHAIN_FILE, "r") as f:
-            data = json.load(f)
+            content = f.read().strip()
+            if not content:
+                return
+            data = json.loads(content)
         for d in data:
             block = Block(
                 index=d["index"],

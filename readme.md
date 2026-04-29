@@ -44,21 +44,20 @@ pharma-chain/
 git clone https://github.com/yourusername/pharma-chain.git
 cd pharma-chain
 ```
-
-2. Create and activate a virtual environment
+2. Install dependencies
 ```bash
-python -m venv venv
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # Mac/Linux
+cd backend
+python -m pip install flask flask-cors
 ```
 
-3. Install dependencies
+3. Run the app
 ```bash
-pip install flask
+python app.py
 ```
 
-4. Run the app
+4. If you get a corrupted chain error on startup, delete the old chain file and rerun
 ```bash
+rm chain_data.json
 python app.py
 ```
 

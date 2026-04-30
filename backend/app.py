@@ -6,8 +6,10 @@ from blockchain import Blockchain
 from accounts import is_valid_account, is_allowed_action, get_all_accounts, get_allowed_actions
 import time
 import os
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder="static")
+CORS(app)
 blockchain = Blockchain()
 
 

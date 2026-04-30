@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MedChain Supply Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1a1a18;
+  --ink2: #4a4a46;
+  --ink3: #8a8a84;
+  --paper: #faf9f6;
+  --paper2: #f2f1ed;
+  --paper3: #e8e7e2;
+  --rule: #d8d7d2;
+  --accent: #c0392b;
+  --accent-light: #fdf3f2;
+  --serif: 'Lora', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --max: 860px;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+header {
+  border-bottom: 2px solid var(--ink);
+  padding: 1.25rem 0 1rem;
+}
+.header-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.site-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.site-name span { color: var(--accent); }
+.chain-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chain-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #2ecc71;
+}
+
+nav {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.nav-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+}
+.nav-tab {
+  padding: 0.75rem 1.25rem;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+.nav-tab:hover { color: var(--ink); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+.section-head {
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.section-head h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.section-head p { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--rule);
+  margin-bottom: 2.5rem;
+}
+.stat {
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--rule);
+}
+.stat:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.blocks-list { }
+.block-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 130px;
+  align-items: center;
+  padding: 0.9rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 1rem;
+}
+.block-row:first-of-type { border-top: 1px solid var(--rule); }
+.block-row:hover, .block-row.open { background: var(--paper2); }
+.block-num { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+.block-action-label { font-size: 14px; font-weight: 500; }
+.block-product { font-size: 13px; color: var(--ink2); font-style: italic; }
+.block-acct { font-family: var(--mono); font-size: 11px; text-align: right; }
+
+.block-detail-row {
+  display: none;
+  padding: 1rem 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper2);
+}
+.block-detail-row.open { display: block; }
+.detail-table {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.detail-table td { padding: 4px 8px 4px 0; vertical-align: top; }
+.detail-table td:first-child { color: var(--ink3); width: 130px; font-size: 11px; padding-top: 5px; }
+.hash-val { word-break: break-all; line-height: 1.5; font-size: 11px; color: var(--ink2); }
+.hash-prefix { color: var(--accent); font-weight: 500; }
+
+.participants-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 2rem;
+}
+.participants-table th {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  text-align: left;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 400;
+}
+.participants-table td {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--paper3);
+  vertical-align: top;
+}
+.participants-table td:first-child { font-weight: 500; }
+.participant-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.actions-list { font-family: var(--mono); font-size: 11px; color: var(--ink3); line-height: 2; }
+
+.search-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--rule);
+}
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: white;
+  padding: 0.7rem 1rem;
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+}
+.search-bar input::placeholder { color: var(--ink3); font-style: italic; }
+.search-bar button {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0.7rem 1.25rem;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.search-bar button:hover { background: var(--accent); }
+
+.product-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2rem; }
+.product-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  background: white;
+  cursor: pointer;
+  transition: all 0.12s;
+  color: var(--ink2);
+}
+.product-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+.timeline { }
+.t-item {
+  display: grid;
+  grid-template-columns: 80px 20px 1fr;
+  gap: 0 1rem;
+}
+.t-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  text-align: right;
+  padding-top: 14px;
+  line-height: 1.3;
+}
+.t-spine { display: flex; flex-direction: column; align-items: center; }
+.t-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-top: 16px;
+  flex-shrink: 0;
+  border: 2px solid var(--paper);
+  outline: 2px solid currentColor;
+  position: relative;
+  z-index: 1;
+}
+.t-line { flex: 1; width: 1px; background: var(--rule); margin-top: 2px; }
+.t-item:last-child .t-line { display: none; }
+.t-body { padding: 10px 0 20px; }
+.t-action { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.t-meta { font-size: 12px; color: var(--ink3); margin-bottom: 4px; }
+.t-hash { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+
+.form-wrap { max-width: 480px; }
+.field { margin-bottom: 1.5rem; }
+.field label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: white;
+  padding: 0.65rem 0.85rem;
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--ink); }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink3); font-style: italic; }
+.field textarea { min-height: 90px; resize: vertical; font-family: var(--serif); }
+.field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8a84'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+.action-hints { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.action-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.action-hint:hover { border-color: var(--ink); color: var(--ink); }
+
+.submit-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0.8rem 2rem;
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: 100%;
+  letter-spacing: 0.03em;
+}
+.submit-btn:hover { background: var(--accent); }
+
+.verify-box {
+  border: 1px solid var(--rule);
+  padding: 2rem;
+  max-width: 480px;
+  margin-top: 1.5rem;
+  display: none;
+}
+.verify-box.valid { border-color: #2ecc71; }
+.verify-box.invalid { border-color: var(--accent); }
+.verify-status { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+.verify-msg { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+
+.how-it-works {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.5rem;
+  max-width: 480px;
+}
+.how-it-works h3 { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+.step { display: flex; gap: 1rem; margin-bottom: 0.75rem; font-size: 13px; color: var(--ink2); }
+.step-num { font-family: var(--mono); font-size: 11px; color: var(--accent); flex-shrink: 0; padding-top: 2px; }
+
+.verify-btn {
+  background: none;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 0.65rem 1.5rem;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.verify-btn:hover { background: var(--ink); color: var(--paper); }
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 10px 16px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.error { background: var(--accent); }
+
+.empty { font-style: italic; color: var(--ink3); font-size: 14px; padding: 2rem 0; }
+code { font-family: var(--mono); font-size: 0.9em; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="site-name">Med<span>Chain</span> — Pharmaceutical Supply Tracker</div>
+    <div class="chain-badge" id="chain-badge">checking…</div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="switchTab('chain')" id="nav-chain">Chain</button>
+    <button class="nav-tab" onclick="switchTab('history')" id="nav-history">Product history</button>
+    <button class="nav-tab" onclick="switchTab('log')" id="nav-log">Log event</button>
+    <button class="nav-tab" onclick="switchTab('verify')" id="nav-verify">Verify</button>
+    <button class="nav-tab" onclick="switchTab('accounts')" id="nav-accounts">Accounts</button>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- Chain -->
+  <div class="view active" id="view-chain">
+    <div class="section-head">
+      <h2>Blockchain explorer</h2>
+      <p id="chain-sub">loading…</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="s-blocks">—</div><div class="stat-label">Blocks</div></div>
+      <div class="stat"><div class="stat-num" id="s-txns">—</div><div class="stat-label">Transactions</div></div>
+      <div class="stat"><div class="stat-num" id="s-products">—</div><div class="stat-label">Products</div></div>
+      <div class="stat"><div class="stat-num" id="s-valid" style="font-size:15px;padding-top:8px">—</div><div class="stat-label">Integrity</div></div>
+    </div>
+    <div class="blocks-list" id="blocks-list"><div class="empty">Loading chain…</div></div>
+  </div>
+
+  <!-- History -->
+  <div class="view" id="view-history">
+    <div class="section-head"><h2>Product history</h2><p>Full journey for any batch</p></div>
+    <div class="search-bar">
+      <input type="text" id="hist-input" placeholder="Product name or batch ID…" onkeydown="if(event.key==='Enter')fetchHistory()" />
+      <button onclick="fetchHistory()">Search</button>
+    </div>
+    <div id="product-pills" class="product-list"></div>
+    <div id="hist-result"></div>
+  </div>
+
+  <!-- Log event -->
+  <div class="view" id="view-log">
+    <div class="section-head"><h2>Log supply chain event</h2><p>Each submission mines a new block</p></div>
+    <div class="form-wrap">
+      <div class="field">
+        <label>Product / Batch ID</label>
+        <input type="text" id="f-product" placeholder="e.g. Aspirin Batch 001" />
+      </div>
+      <div class="field">
+        <label>Account</label>
+        <select id="f-account" onchange="updateActions()">
+          <option value="">Select an organization…</option>
+          <option value="PharmaCo">PharmaCo — Manufacturer</option>
+          <option value="ColdStorage">ColdStorage — Warehouse</option>
+          <option value="MedDistribute">MedDistribute — Distributor</option>
+          <option value="CVS">CVS — Retail Pharmacy</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Action</label>
+        <select id="f-action"><option value="">Select account first…</option></select>
+        <div class="action-hints" id="action-hints"></div>
+      </div>
+      <div class="field">
+        <label>Note <span style="text-transform:none;letter-spacing:0;font-style:italic">(optional)</span></label>
+        <textarea id="f-note" placeholder="Additional details…"></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitLog()">Submit &amp; mine block</button>
+    </div>
+  </div>
+
+  <!-- Verify -->
+  <div class="view" id="view-verify">
+    <div class="section-head"><h2>Verify chain integrity</h2><p>Checks all hashes and block linkages</p></div>
+    <button class="verify-btn" onclick="runVerify()" id="verify-btn">Run verification</button>
+    <div class="verify-box" id="verify-box">
+      <div class="verify-status" id="verify-status"></div>
+      <div class="verify-msg" id="verify-msg"></div>
+    </div>
+    <div class="how-it-works">
+      <h3>How it works</h3>
+      <div class="step"><span class="step-num">01</span><span>Each block's stored hash is recomputed from its contents — detects any data tampering.</span></div>
+      <div class="step"><span class="step-num">02</span><span>Each block's <code>previous_hash</code> is matched against the prior block's hash — detects chain relinking.</span></div>
+      <div class="step"><span class="step-num">03</span><span>Every hash is confirmed to satisfy proof-of-work difficulty — detects hash substitution.</span></div>
+    </div>
+  </div>
+
+  <!-- Accounts -->
+  <div class="view" id="view-accounts">
+    <div class="section-head"><h2>Participants</h2><p>Four independent organizations</p></div>
+    <table class="participants-table">
+      <thead>
+        <tr>
+          <th style="width:160px">Organization</th>
+          <th style="width:140px">Role</th>
+          <th>Permitted actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="participant-dot" style="background:#3498db"></span>PharmaCo</td>
+          <td style="color:var(--ink3);font-size:13px">Manufacturer</td>
+          <td><div class="actions-list">manufactured · qa_passed</div></td>
+        </tr>
+        <tr>
+          <td><span class="participant-dot" style="background:#1abc9c"></span>ColdStorage</td>
+          <td style="color:var(--ink3);font-size:13px">Warehouse</td>
+          <td><div class="actions-list">received_at_warehouse · stored · dispatched_from_warehouse</div></td>
+        </tr>
+        <tr>
+          <td><span class="participant-dot" style="background:#e67e22"></span>MedDistribute</td>
+          <td style="color:var(--ink3);font-size:13px">Distributor</td>
+          <td><div class="actions-list">picked_up_from_warehouse · in_transit · delivered_to_pharmacy</div></td>
+        </tr>
+        <tr>
+          <td><span class="participant-dot" style="background:#9b59b6"></span>CVS</td>
+          <td style="color:var(--ink3);font-size:13px">Retail Pharmacy</td>
+          <td><div class="actions-list">received_at_pharmacy · available_for_sale · sold</div></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:var(--ink3);font-style:italic">No organization can alter or delete a record logged by another account.</p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+
+const ACCT_ACTIONS = {
+  PharmaCo:     ['manufactured','qa_passed'],
+  ColdStorage:  ['received_at_warehouse','stored','dispatched_from_warehouse'],
+  MedDistribute:['picked_up_from_warehouse','in_transit','delivered_to_pharmacy'],
+  CVS:          ['received_at_pharmacy','available_for_sale','sold'],
+};
+const ACCT_COLOR = {
+  PharmaCo:'#3498db', ColdStorage:'#1abc9c', MedDistribute:'#e67e22', CVS:'#9b59b6'
+};
+
+function fmt(ts) {
+  return new Date(ts * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+function fmtFull(ts) {
+  return new Date(ts * 1000).toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 3000);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'chain') loadChain();
+  if (name === 'history') loadProducts();
+}
+
+async function loadChain() {
+  try {
+    const [cr, vr] = await Promise.all([fetch(API+'/chain'), fetch(API+'/verify')]);
+    const chain = await cr.json();
+    const verify = await vr.json();
+    const blocks = chain.chain;
+    const txns = blocks.reduce((s,b) => s + b.transactions.length, 0);
+    const products = new Set(blocks.flatMap(b => b.transactions.map(t => t.product)).filter(Boolean)).size;
+
+    document.getElementById('s-blocks').textContent = blocks.length;
+    document.getElementById('s-txns').textContent = txns;
+    document.getElementById('s-products').textContent = products;
+    document.getElementById('s-valid').textContent = verify.valid ? 'Valid ✓' : 'Invalid ✗';
+    document.getElementById('s-valid').style.color = verify.valid ? '#2ecc71' : '#c0392b';
+    document.getElementById('chain-badge').textContent = verify.valid ? 'chain valid' : 'chain invalid';
+    document.getElementById('chain-sub').textContent = blocks.length + ' blocks';
+    renderBlocks(blocks);
+  } catch {
+    document.getElementById('blocks-list').innerHTML = '<div class="empty">Could not reach backend — make sure Flask is running on localhost:5000.</div>';
+    document.getElementById('chain-badge').textContent = 'backend offline';
+    document.getElementById('chain-badge').style.cssText += 'color:#c0392b';
+    document.getElementById('chain-badge').style.setProperty('--before-bg', '#c0392b');
+  }
+}
+
+function renderBlocks(blocks) {
+  const list = document.getElementById('blocks-list');
+  list.innerHTML = '';
+  [...blocks].reverse().forEach(block => {
+    const tx = block.transactions[0];
+    const action = tx ? tx.action.replace(/_/g,' ') : '';
+    const product = tx ? tx.product : '';
+    const acct = tx ? tx.account : '';
+    const color = ACCT_COLOR[acct] || '#ccc';
+    const isGenesis = block.index === 0;
+
+    const row = document.createElement('div');
+    row.className = 'block-row';
+    row.innerHTML = `
+      <div class="block-num">#${block.index}</div>
+      <div class="block-action-label">${isGenesis ? '<em style="color:var(--ink3);font-weight:400">Genesis block</em>' : action}</div>
+      <div class="block-product">${isGenesis ? '' : product}</div>
+      <div class="block-acct" style="color:${color}">${isGenesis ? '' : acct}</div>
+    `;
+
+    const detail = document.createElement('div');
+    detail.className = 'block-detail-row';
+    const tableRows = tx ? `
+      <tr><td>Product</td><td>${tx.product}</td></tr>
+      <tr><td>Action</td><td>${tx.action}</td></tr>
+      <tr><td>Account</td><td style="color:${color}">${tx.account}</td></tr>
+      ${tx.note ? `<tr><td>Note</td><td style="color:var(--ink2)">${tx.note}</td></tr>` : ''}
+      <tr><td>Event time</td><td>${fmtFull(tx.timestamp)}</td></tr>
+      <tr><td>Nonce</td><td>${block.nonce}</td></tr>
+    ` : `<tr><td colspan="2" style="color:var(--ink3);font-style:italic">Genesis block — no transactions</td></tr>`;
+
+    detail.innerHTML = `
+      <table class="detail-table">
+        ${tableRows}
+        <tr><td>Hash</td><td class="hash-val"><span class="hash-prefix">${block.hash.slice(0,6)}</span>${block.hash.slice(6)}</td></tr>
+        <tr><td>Previous hash</td><td class="hash-val" style="color:var(--ink3)">${block.previous_hash}</td></tr>
+        <tr><td>Block time</td><td>${fmtFull(block.timestamp)}</td></tr>
+      </table>
+    `;
+
+    row.onclick = () => {
+      const wasOpen = detail.classList.contains('open');
+      document.querySelectorAll('.block-detail-row.open').forEach(d => d.classList.remove('open'));
+      document.querySelectorAll('.block-row.open').forEach(r => r.classList.remove('open'));
+      if (!wasOpen) { detail.classList.add('open'); row.classList.add('open'); }
+    };
+
+    list.appendChild(row);
+    list.appendChild(detail);
+  });
+}
+
+async function loadProducts() {
+  try {
+    const res = await fetch(API+'/products');
+    const data = await res.json();
+    const pills = document.getElementById('product-pills');
+    pills.innerHTML = '';
+    (data.products || []).forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'product-pill';
+      el.textContent = p;
+      el.onclick = () => { document.getElementById('hist-input').value = p; fetchHistory(); };
+      pills.appendChild(el);
+    });
+    if (!data.products?.length) pills.innerHTML = '<span style="font-size:13px;color:var(--ink3);font-style:italic">No products logged yet.</span>';
+  } catch {}
+}
+
+async function fetchHistory() {
+  const q = document.getElementById('hist-input').value.trim();
+  if (!q) return;
+  const result = document.getElementById('hist-result');
+  result.innerHTML = '<div class="empty">Searching…</div>';
+  try {
+    const res = await fetch(API+'/history/'+encodeURIComponent(q));
+    if (!res.ok) { result.innerHTML = `<div class="empty">No records found for "${q}".</div>`; return; }
+    const data = await res.json();
+    renderTimeline(data.history);
+  } catch {
+    result.innerHTML = '<div class="empty">Backend unreachable.</div>';
+  }
+}
+
+function renderTimeline(history) {
+  const result = document.getElementById('hist-result');
+  if (!history?.length) { result.innerHTML = '<div class="empty">No events found.</div>'; return; }
+  const items = history.map(tx => {
+    const color = ACCT_COLOR[tx.account] || '#ccc';
+    return `
+      <div class="t-item">
+        <div class="t-time">${fmt(tx.timestamp)}</div>
+        <div class="t-spine">
+          <div class="t-dot" style="color:${color}"></div>
+          <div class="t-line"></div>
+        </div>
+        <div class="t-body">
+          <div class="t-action">${tx.action.replace(/_/g,' ')}</div>
+          <div class="t-meta" style="color:${color}">${tx.account}${tx.note ? ' — '+tx.note : ''}</div>
+          <div class="t-hash">Block #${tx.block_index} · ${tx.block_hash.slice(0,8)}…</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  result.innerHTML = `
+    <p style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-bottom:1.5rem;letter-spacing:0.04em">${history.length} event${history.length!==1?'s':''} found</p>
+    <div class="timeline">${items}</div>
+  `;
+}
+
+function updateActions() {
+  const acct = document.getElementById('f-account').value;
+  const sel = document.getElementById('f-action');
+  const hints = document.getElementById('action-hints');
+  sel.innerHTML = '';
+  hints.innerHTML = '';
+  if (!acct || !ACCT_ACTIONS[acct]) { sel.innerHTML = '<option>Select account first…</option>'; return; }
+  ACCT_ACTIONS[acct].forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a.replace(/_/g,' ');
+    sel.appendChild(opt);
+    const chip = document.createElement('div');
+    chip.className = 'action-hint';
+    chip.textContent = a.replace(/_/g,' ');
+    chip.onclick = () => sel.value = a;
+    hints.appendChild(chip);
+  });
+}
+
+async function submitLog() {
+  const product = document.getElementById('f-product').value.trim();
+  const account = document.getElementById('f-account').value;
+  const action  = document.getElementById('f-action').value;
+  const note    = document.getElementById('f-note').value.trim();
+  if (!product || !account || !action) { showToast('Fill in all required fields.', 'error'); return; }
+  try {
+    const res = await fetch(API+'/log', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({product, account, action, note})
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Error logging event.', 'error'); return; }
+    showToast('Block #'+data.block_index+' mined.');
+    document.getElementById('f-product').value = '';
+    document.getElementById('f-note').value = '';
+  } catch { showToast('Backend unreachable.', 'error'); }
+}
+
+async function runVerify() {
+  const btn = document.getElementById('verify-btn');
+  btn.textContent = 'Verifying…';
+  btn.disabled = true;
+  const box = document.getElementById('verify-box');
+  try {
+    const res = await fetch(API+'/verify');
+    const data = await res.json();
+    box.style.display = 'block';
+    box.className = 'verify-box '+(data.valid ? 'valid' : 'invalid');
+    document.getElementById('verify-status').textContent = data.valid ? 'Chain is valid ✓' : 'Integrity check failed ✗';
+    document.getElementById('verify-status').style.color = data.valid ? '#2ecc71' : '#c0392b';
+    document.getElementById('verify-msg').textContent = data.message;
+  } catch {
+    box.style.display = 'block';
+    box.className = 'verify-box invalid';
+    document.getElementById('verify-status').textContent = 'Backend unreachable';
+    document.getElementById('verify-msg').textContent = '';
+  }
+  btn.textContent = 'Run verification';
+  btn.disabled = false;
+}
+
+loadChain();
+</script>
+</body>
+</html>

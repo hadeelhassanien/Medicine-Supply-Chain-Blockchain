@@ -70,5 +70,69 @@
     "previous_hash": "0027bb7ce72f4f987e3db182960efbf8697cdef5ba77c39625d89e195458ed9b",
     "nonce": 334,
     "hash": "00c49807e881bc4273ec975716375587b0f2a6237a69ecbb0c355e5084c299b5"
+  },
+  {
+    "index": 5,
+    "transactions": [
+      {
+        "product": "Aspirin Batch 001",
+        "action": "manufactured",
+        "account": "PharmaCo",
+        "note": "Lot A001 - 10000 units",
+        "timestamp": 1777775294.9657753
+      }
+    ],
+    "timestamp": 1777775294.9658892,
+    "previous_hash": "00c49807e881bc4273ec975716375587b0f2a6237a69ecbb0c355e5084c299b5",
+    "nonce": 535,
+    "hash": "001c4bea8a2a2840d3c191e841ec7a95baf6989442fa697545f83dc11d14403a"
+  },
+  {
+    "index": 6,
+    "transactions": [
+      {
+        "product": "Aspirin Batch 001",
+        "action": "received_at_warehouse",
+        "account": "ColdStorage",
+        "note": "Temp 4C on arrival",
+        "timestamp": 1777775337.725713
+      }
+    ],
+    "timestamp": 1777775337.725721,
+    "previous_hash": "001c4bea8a2a2840d3c191e841ec7a95baf6989442fa697545f83dc11d14403a",
+    "nonce": 156,
+    "hash": "00770e79e4a53b460f5025437a0607751a0c784bd0f387639334094bd332faeb"
+  },
+  {
+    "index": 7,
+    "transactions": [
+      {
+        "product": "Aspirin Batch 001",
+        "action": "delivered_to_pharmacy",
+        "account": "MedDistribute",
+        "note": "Truck MT- 77",
+        "timestamp": 1777775375.5837774
+      }
+    ],
+    "timestamp": 1777775375.5837889,
+    "previous_hash": "00770e79e4a53b460f5025437a0607751a0c784bd0f387639334094bd332faeb",
+    "nonce": 418,
+    "hash": "00efd9f37b98b81fcd14c575af04e315627b451f850c658b494930cfd472d52f"
+  },
+  {
+    "index": 8,
+    "transactions": [
+      {
+        "product": "Aspirin Batch 001",
+        "action": "received_at_pharmacy",
+        "account": "CVS",
+        "note": "All seals intact",
+        "timestamp": 1777775409.1402717
+      }
+    ],
+    "timestamp": 1777775409.1402755,
+    "previous_hash": "00efd9f37b98b81fcd14c575af04e315627b451f850c658b494930cfd472d52f",
+    "nonce": 505,
+    "hash": "00c2f12b427b38ccdbf9575803a579e642a19d655857c5af8826661d353dd0d3"
   }
 ]

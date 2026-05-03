@@ -8,7 +8,7 @@ import time
 import os
 from flask_cors import CORS
 
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="../frontend")
 CORS(app)
 blockchain = Blockchain()
 
@@ -16,7 +16,7 @@ blockchain = Blockchain()
 # ── Serve the dashboard ────────────────────────────────────────────
 @app.route("/")
 def index():
-    return send_from_directory("static", "index.html")
+    return send_from_directory("../frontend", "index.html")
 
 
 # ── Log a new supply chain event ───────────────────────────────────
